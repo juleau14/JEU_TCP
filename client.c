@@ -81,27 +81,39 @@ int main(int argc, char **argv) {
     int socket_desc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (socket_desc == -1) {
-      perror("Erreur de création du socket.");
+      perror("Erreur de création du socket.\n");
       return EXIT_FAILURE;
+    }
+
+    else {
+      printf("Création du socket OK\n");
     }
 
     /* Init caracteristiques serveur distant (struct sockaddr_in) */
 
 
     /* Etablissement connexion TCP avec process serveur distant */
-    struct sockaddr_in dst_serv_addr;
+    struct sockaddr_in dst_serv_addr;                           // création de la structure qui va contenir les adresses et les configs
+    printf("Struct ok\n");
 
-    memset(&dst_serv_addr, 0, sizeof(dst_serv_addr));
-    dst_serv_addr.sin_family = AF_INET;
-    dst_serv_addr.sin_port = htons(port);
-    inet_pton(AF_INET, adresse_ip, &(dst_serv_addr.sin_addr));
+    memset(&dst_serv_addr, 0, sizeof(dst_serv_addr));           // initialisation des valeurs de la structure à 0
+    printf("init 0 ok\n");
+    dst_serv_addr.sin_family = AF_INET;                         // définition du domaine (AF_INET pour connextion distante, AF_UNIX pour connexion hote local)
+    dst_serv_addr.sin_port = htons(port);                       // définition du port du serveur distant
+    printf("def port ok\n");
+    inet_pton(AF_INET, adresse_ip, &(dst_serv_addr.sin_addr));  // définition de l'adresse ip du serveur distant (inet_pton converti le str en format valide pour l'ip)
+    printf("def ip ok\n");
 
-    int return_connect = connect(socket_desc, (struct sockaddr *) &dst_serv_addr, sizeof(dst_serv_addr)) ;
+    int return_connect = connect(socket_desc, (struct sockaddr *) &dst_serv_addr, sizeof(dst_serv_addr));   // connexion
 
     if (return_connect == -1) {
       perror("Erreur connect.");
       close(socket_desc);
       return EXIT_FAILURE;
+    }
+
+    else {
+      printf("Connexion du socket OK\n");
     }
 
 
