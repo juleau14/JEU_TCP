@@ -90,9 +90,6 @@ int main(int argc, char **argv) {
     }
 
     /* Init caracteristiques serveur distant (struct sockaddr_in) */
-
-
-    /* Etablissement connexion TCP avec process serveur distant */
     struct sockaddr_in dst_serv_addr;                           // création de la structure qui va contenir les adresses et les configs
     printf("Struct ok\n");
 
@@ -103,6 +100,8 @@ int main(int argc, char **argv) {
     printf("def port ok\n");
     inet_pton(AF_INET, adresse_ip, &(dst_serv_addr.sin_addr));  // définition de l'adresse ip du serveur distant (inet_pton converti le str en format valide pour l'ip)
     printf("def ip ok\n");
+
+    /* Etablissement connexion TCP avec process serveur distant */
 
     int return_connect = connect(socket_desc, (struct sockaddr *) &dst_serv_addr, sizeof(dst_serv_addr));   // connexion
 
@@ -132,7 +131,7 @@ int main(int argc, char **argv) {
 
 
         /* Envoi de la requête au serveur (send) */
-        int return_send = send(socket_desc, requete, 4, 0);
+        int return_send = send(socket_desc, requete, 3, 0);
 
         if (return_send == -1) {
           perror("Erreur d'envoi au serveur.");
@@ -140,9 +139,10 @@ int main(int argc, char **argv) {
           return EXIT_FAILURE;
         }
 
+
         /* Réception du resultat du coup (recv) */
-        char msg_recu[3];
-        int return_recv = recv(socket_desc, msg_recu, 1, 0);
+        char msg_recu[10];
+        int return_recv = recv(socket_desc, &msg_recu, sizeof(msg_recu), 0);
 
         if (return_recv == -1) {
           perror("Erreur réception.");
@@ -152,7 +152,11 @@ int main(int argc, char **argv) {
 
         /* Deserialisation du résultat en un entier */
         // TODO
-        res = atoi(msg_recu);
+        char res_char[10];
+        res_char[0] = msg_recu[0];
+        res = atoi(res_char);
+
+        printf("res : %d\n", res);
 
         /* Mise à jour */
         if (lig>=1 && lig<=N && col>=1 && col<=N)

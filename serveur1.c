@@ -30,6 +30,26 @@ int main(int argc, char **argv) {
       printf("Création socket ok\n");
     }
 
+    // Binding (définition du numéro de port sur lequel le socket va écouter)
+
+    struct sockaddr_in localaddr;                // on créée la struct qui va contenir les infos necessaires au binding
+    memset(&localaddr, 0, sizeof(localaddr)); // init des valeurs à 0
+    localaddr.sin_family = AF_INET;           // domaine AF_INET
+    localaddr.sin_port = htons(5555);         // définition du port
+    localaddr.sin_addr.s_addr = htonl(INADDR_ANY);   // définition de l'adresse
+
+    int return_bind = bind(socket_desc, (struct sockaddr *) &localaddr, sizeof(localaddr)); // binding
+
+    if (return_bind == -1) {
+      perror("Erreur binding");
+      close(socket_desc);
+      return EXIT_FAILURE;
+    }
+
+    else {
+      printf("Binding OK\n");
+    }
+
     int list = listen(socket_desc, 10);        // mise du socket à l'etat d'ecoute
 
     if (list == -1) {
@@ -55,12 +75,13 @@ int main(int argc, char **argv) {
         else {      // si aucune erreur, la partie commence
             printf("Connexion bien acceptée, début de la partie\n");
             int res = -1;     // initialisation du resultat des tours
-            int lig_tresor = rand() % 10;
-            int col_tresor = rand() % 10;
+            int lig_tresor = 5;
+            int col_tresor = 5;
             char requete_recue[10];
+            char res_char[10];
 
             while (res != 0) {    // tant que le joueur ne trouve pas le trésor
-              if (recv(newsock, requete_recue, 2, 0) == -1) {
+              if (recv(newsock, requete_recue, sizeof(requete_recue), 0) == -1) {
                 perror("Erreur réception.");
                 close(newsock);
                 close(socket_desc);
@@ -68,18 +89,27 @@ int main(int argc, char **argv) {
               }
 
               else {
-                int lig_choisie = requete_recue[0] - '0';
-                int col_choisie = requete_recue[2] - '0';
+                printf("requete %s\n", requete_recue);
+                char lig_recue_char[10];
+                char col_recue_char[10];
 
-                res = recherche_tresor(10, lig_tresor, col_tresor, lig_choisie, col_choisie);
+                lig_recue_char[0] = requete_recue[0];
+                col_recue_char[0] = requete_recue[2];
 
-                char c_res = res - '0';
+                int lig_recu = atoi(lig_recue_char);
+                int col_recu = atoi(col_recue_char);
 
-                if (send((newsock), &c_res, sizeof(char), 0) == -1) {
+                res = recherche_tresor(10, lig_tresor, col_tresor, lig_recu, col_recu);
+                sprintf(res_char, "%d", res);
+
+                if (send((newsock), &res_char, sizeof(res_char), 0) == -1) {
                   perror("Erreur envoie.");
                   close(newsock);
                   close(socket_desc);
                   return EXIT_FAILURE;
+                }
+                else {
+                  printf("\nresultat bien envoyé\n str : %s\n int : %d\n", res_char, res);
                 }
               }
 
